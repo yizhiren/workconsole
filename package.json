@@ -1,0 +1,30 @@
+{
+  "name": "workconsole",
+  "version": "1.0.0",
+  "description": "word dashboard based on console ui",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yizhiren/workconsole.git"
+  },
+  "keywords": [
+    "dashboard",
+    "ui",
+    "console"
+  ],
+  "author": "yizhiren@github",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yizhiren/workconsole/issues"
+  },
+  "homepage": "https://github.com/yizhiren/workconsole#readme",
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "blessed-contrib": "^4.8.12",
+    "chatwe": "^1.0.3",
+    "ps-list": "^6.2.0"
+  }
+}
