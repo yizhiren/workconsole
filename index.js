@@ -1,6 +1,8 @@
 var blessed = require('blessed')
 var contrib = require('blessed-contrib')
 var psList = require('ps-list');
+var musicAPI = require("music-api-next");
+var child_process = require('child_process');
 let Wechat = require('chatwe')
 let wechat = new Wechat()
 
@@ -10,10 +12,11 @@ var dinnerTime
 var sleepTime
 var processList
 var chat
+var music
 
-
-
+var playing = {}
 var chatMsg = []
+var musicSource = 'netease'
 
 function appendChatMsg(msg) {
   var fromUser = msg.From
@@ -94,6 +97,7 @@ function attachAll(){
   sleepTime.emit('attach');
   processList.emit('attach')
   chat.emit('attach')
+  music.emit('attach')
 }
 
 
@@ -269,6 +273,94 @@ function generateChat() {
   screen.render()
 }
 
+async function getNextSong() {
+  var keys=['周杰伦','陈奕迅','李宗盛','刘德华','张学友']
+  var key = keys[Math.floor(Math.random()*keys.length)]
+  var songs = await musicAPI
+    .searchSong({
+      key: key,
+      page: 1,
+      limit: 10,
+      vendor: musicSource
+    })
+    .then(async function(songs) {
+      return songs
+    })
+    .catch(error => {
+      console.log(error.message)
+      return {success:false}
+    });
+
+  if(!songs || !songs.success || songs.results.length <= 0) {
+    await waitOneSecond()
+    return getNextSong()
+  }
+
+  var results = songs.results
+  var result = results[Math.floor(Math.random()*results.length)]
+  if(result.needPay){
+    result = results[Math.floor(Math.random()*results.length)]
+  }
+  if(result.needPay){
+    result = results[Math.floor(Math.random()*results.length)]
+  }
+  if(result.needPay){
+    return getNextSong()
+  }
+
+  var meta = await musicAPI
+    .getSong({
+      id: result.id,
+      vendor: musicSource
+    })
+    .then(meta => meta)
+    .catch(error => {
+      console.log(error.message)
+      return {success:false}
+    });
+
+  if(meta && meta.success) {
+    meta.artist = result.artist
+    meta.name = result.name
+    meta.url = meta.results.url
+    return meta
+  } else {
+    await waitOneSecond()
+    return getNextSong()
+  }
+  
+}
+
+async function loopplay(){
+  var meta = await getNextSong()
+  //meta.url='/Users/qroot/code/workconsole/workconsole/cache/1553984277676.mp3'
+  playing = meta
+  
+  // 现在播放完会crash，放子进程进行绕过
+  var playerSon = child_process.spawn('node',['mp3.js', meta.url])
+
+  playerSon.on('exit', (code) => {
+    //console.log(`exited ${code}`);
+    loopplay()
+  });
+}
+
+
+function generateMusic() {
+  if(!playing.name){
+    return
+  }
+
+  var dummySparkLine = []
+  for(var i=0;i<200;i++) {
+    dummySparkLine.push(Math.random()*10+1)
+  }
+  
+  music.setData(['[playing...] ' + playing.name + '(' + playing.artist + ')'], [dummySparkLine])     
+
+  screen.render()
+}
+
 
 async function main() {
 
@@ -282,7 +374,7 @@ async function main() {
     fullUnicode: true
   })
   screen.title = 'My\'s Dashboard'
-  var grid = new contrib.grid({rows: 10, cols: 11, screen: screen})
+  var grid = new contrib.grid({rows: 12, cols: 11, screen: screen})
 
   ///
   lunchTime = grid.set(0, 0, 4, 2, contrib.donut,
@@ -324,12 +416,26 @@ async function main() {
   generateProcess()
   setInterval(generateProcess, 3000)
   ///
-  chat =  grid.set(4, 0, 6, 11, contrib.table,
+  music = grid.set(4, 0, 2, 11, contrib.sparkline, 
+  { label: 'Music-' + musicSource
+  , tags: true
+  , style: { fg: 'red', titleFg: 'green' }})
+
+  /*grid.set(4, 0, 1, 11, contrib.table,
+    { keys: true
+    , fg: 'green'
+    , label: 'Music'
+    , columnSpacing: 1
+    , columnWidth: [16, 24, 20, 20, 60]})*/
+  loopplay()
+  setInterval(generateMusic, 1000)
+  ///
+  chat =  grid.set(6, 0, 6, 11, contrib.table,
   { keys: true
   , fg: 'green'
   , label: 'Wechat'
   , columnSpacing: 1
-  , columnWidth: [10, 24, 20, 20, 60]})
+  , columnWidth: [16, 24, 20, 20, 60]})
   chat.focus()
   setInterval(generateChat, 1000)
 
