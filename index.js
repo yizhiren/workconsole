@@ -14,17 +14,24 @@ var processList
 var chat
 var music
 
+var playerSon
 var playing = {}
 var chatMsg = []
 var musicSource = 'netease'
 
-function appendChatMsg(msg) {
+process.on('exit', (code) => {
+  if (playerSon) {
+    playerSon.kill()
+  }
+});
+
+function appendChatMsg(msg, contentField='Content') {
   var fromUser = msg.From
   var fromName = fromUser.NickName
   if (fromUser.RemarkName && fromUser.RemarkName !== '') {
     fromName += '(' + fromUser.RemarkName + ')'
   }
-  if(msg.IsFromChatRoom) {
+  if(msg.ChatRoomUser) {
     var roomUser = msg.ChatRoomUser
     var displayName = roomUser.DisplayName || ''
     var roomUserName = displayName != '' ? displayName: roomUser.NickName
@@ -41,7 +48,7 @@ function appendChatMsg(msg) {
     time: new Date().toLocaleString(),
     from: fromName,
     to: toName,
-    content: msg.Content
+    content: msg[contentField]
   })
 
 }
@@ -53,7 +60,7 @@ wechat.registerTextHandler(async function (msg) {
   //console.log(msg)
 }).registerMapHandler(async function (msg) {
   await msg.Download()
-  appendChatMsg(msg)
+  appendChatMsg(msg,'Text')
   //console.log(msg)
 }).registerImageHandler(async function (msg) {
   await msg.Download()
@@ -337,7 +344,7 @@ async function loopplay(){
   playing = meta
   
   // 现在播放完会crash，放子进程进行绕过
-  var playerSon = child_process.spawn('node',['mp3.js', meta.url])
+  playerSon = child_process.spawn('node',['mp3.js', meta.url])
 
   playerSon.on('exit', (code) => {
     //console.log(`exited ${code}`);
@@ -421,12 +428,6 @@ async function main() {
   , tags: true
   , style: { fg: 'red', titleFg: 'green' }})
 
-  /*grid.set(4, 0, 1, 11, contrib.table,
-    { keys: true
-    , fg: 'green'
-    , label: 'Music'
-    , columnSpacing: 1
-    , columnWidth: [16, 24, 20, 20, 60]})*/
   loopplay()
   setInterval(generateMusic, 1000)
   ///
@@ -435,7 +436,7 @@ async function main() {
   , fg: 'green'
   , label: 'Wechat'
   , columnSpacing: 1
-  , columnWidth: [16, 24, 20, 20, 60]})
+  , columnWidth: [10, 24, 20, 20, 60]})
   chat.focus()
   setInterval(generateChat, 1000)
 
