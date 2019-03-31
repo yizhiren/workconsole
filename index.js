@@ -134,7 +134,7 @@ function updatelunchTime(){
     var h = Math.floor(snd / 3600);
     var m = Math.floor((snd / 60 % 60));
     var s = Math.floor((snd % 60));
-    pctTime = h + "H " + m + "M " + s + "S";
+    pctTime = h + "h " + m + "m " + s + "s";
   }
 
   var color = "green";
@@ -176,7 +176,7 @@ function updateDinnerTime(){
     var h = Math.floor(snd / 3600);
     var m = Math.floor((snd / 60 % 60));
     var s = Math.floor((snd % 60));
-    pctTime = h + "H " + m + "M " + s + "S";
+    pctTime = h + "h " + m + "m " + s + "s";
   }
 
   var color = "green";
@@ -213,7 +213,7 @@ function updateSleepTime(){
     var h = Math.floor(snd / 3600);
     var m = Math.floor((snd / 60 % 60));
     var s = Math.floor((snd % 60));
-    pctTime = h + "H " + m + "M " + s + "S";
+    pctTime = h + "h " + m + "m " + s + "s";
   }
 
   var color = "green";
