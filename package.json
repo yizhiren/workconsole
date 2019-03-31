@@ -24,7 +24,7 @@
   "dependencies": {
     "blessed": "^0.1.81",
     "blessed-contrib": "^4.8.12",
-    "chatwe": "^1.0.3",
+    "chatwe": "^1.0.4",
     "lame": "^1.2.4",
     "music-api-next": "^1.0.0",
     "player": "^0.6.1",
